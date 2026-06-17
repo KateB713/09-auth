@@ -6,10 +6,10 @@ import { useDebouncedCallback } from 'use-debounce';
 import Link from 'next/link';
 import css from './Notes.module.css';
 
-import { fetchNotes } from '../../../../lib/api';
-import NoteList from '../../../../components/NoteList/NoteList';
-import Pagination from '../../../../components/Pagination/Pagination';
-import SearchBox from '../../../../components/SearchBox/SearchBox';
+import { fetchNotes } from '../../../../../lib/api';
+import NoteList from '../../../../../components/NoteList/NoteList';
+import Pagination from '../../../../../components/Pagination/Pagination';
+import SearchBox from '../../../../../components/SearchBox/SearchBox';
 
 interface NotesClientProps {
   tag?: string;
