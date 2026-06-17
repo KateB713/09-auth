@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import Modal from '../../../../components/Modal/Modal';
 import { fetchNoteById } from '../../../../lib/api';
-import css from '../../../../components/NoteDetails/NoteDetails.module.css';
+import css from '@/components/NoteDetails/NoteDetails.module.css';
 
 interface NotePreviewClientProps {
   id: string;
