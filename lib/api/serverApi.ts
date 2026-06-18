@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import type { Note } from '../../types/note';
 import type { User } from '../../types/user';
-import axios from 'axios';
+import axios, { type AxiosResponse } from 'axios';
 
 interface FetchNotesParams {
   page?: number;
@@ -59,14 +59,14 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   return data;
 };
 
-export const checkSession = async (): Promise<User | null> => {
-  const { data } = await serverApi.get<User | null>('/auth/session', {
+export const checkSession = async (
+  cookieHeader: string
+): Promise<AxiosResponse<User>> => {
+  return serverApi.get<User>('/auth/session', {
     headers: {
-      Cookie: await getCookieHeader(),
+      Cookie: cookieHeader,
     },
   });
-
-  return data;
 };
 
 export const getMe = async (): Promise<User | null> => {
