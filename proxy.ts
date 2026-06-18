@@ -21,9 +21,7 @@ export async function proxy(request: NextRequest) {
 
   if (!accessToken && refreshToken) {
     try {
-      const sessionResponse = await checkSession(
-        request.headers.get('cookie') ?? ''
-      );
+      const sessionResponse = await checkSession();
 
       isAuthenticated = sessionResponse.status === 200;
 

@@ -59,12 +59,10 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   return data;
 };
 
-export const checkSession = async (
-  cookieHeader: string
-): Promise<AxiosResponse<User>> => {
+export const checkSession = async (): Promise<AxiosResponse<User>> => {
   return serverApi.get<User>('/auth/session', {
     headers: {
-      Cookie: cookieHeader,
+      Cookie: await getCookieHeader(),
     },
   });
 };
