@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkSession } from './lib/api/serverApi';
 
 const privateRoutes = ['/profile', '/notes'];
-const publicRoutes = ['/sign-in', '/sign-up'];
+const authRoutes = ['/sign-in', '/sign-up'];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -10,37 +11,47 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-  const sessionResponse = await fetch(
-    `${request.nextUrl.origin}/api/auth/session`,
-    {
-      headers: {
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-    }
-  );
+  const accessToken = request.cookies.get('accessToken');
+  const refreshToken = request.cookies.get('refreshToken');
 
-  let isAuthenticated = false;
+  let isAuthenticated = Boolean(accessToken);
+  let newCookies: string[] = [];
 
-  if (sessionResponse.ok) {
+  if (!accessToken && refreshToken) {
     try {
-      const user = await sessionResponse.json();
-      isAuthenticated = Boolean(user?.email);
+      const sessionResponse = await checkSession(
+        request.headers.get('cookie') ?? ''
+      );
+
+      isAuthenticated = sessionResponse.status === 200;
+
+      const setCookie = sessionResponse.headers['set-cookie'];
+
+      if (setCookie) {
+        newCookies = Array.isArray(setCookie) ? setCookie : [setCookie];
+      }
     } catch {
       isAuthenticated = false;
     }
   }
 
+  let response: NextResponse;
+
   if (isPrivateRoute && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    response = NextResponse.redirect(new URL('/sign-in', request.url));
+  } else if (isAuthRoute && isAuthenticated) {
+    response = NextResponse.redirect(new URL('/', request.url));
+  } else {
+    response = NextResponse.next();
   }
 
-  if (isPublicRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/profile', request.url));
+  for (const cookie of newCookies) {
+    response.headers.append('set-cookie', cookie);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
